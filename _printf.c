@@ -1,96 +1,101 @@
 #include "main.h"
-#include <stdio.h>
 /**
- * _printf - prints anything
- * @format: the string to print
- * Return: an integer
- */
-int _printf(char *format, ...)
+ *_printf - printf
+*@format: const char pointer
+*Description: this functions implement some functions of printf
+*Return: num of characteres printed
+*/
+int _printf(const char *format, ...)
 {
-unsigned int i = 0, count = 0;
-unsigned int *p_i = &i;
+const char *string;
+int cont = 0;
 va_list arg;
+if (!format)
+return (-1);
 va_start(arg, format);
-if (format == NULL)
-{
+string = format;
+cont = loop_format(arg, string);
 va_end(arg);
-return (-1);
-}
-for (i = 0; format[i] != '\0'; i++)
-{
-if (format[i] == '%')
-{
-switch (format[i + 1])
-{
-case '\0':
-va_end(arg);
-return (-1);
-case '%':
-count += p_print();
-i++;
-break;
-case 'c':
-count += c_print(va_arg(arg, int));
-i++;
-break;
-default:
-count += _printf_ext_1(arg, format[i + 1], p_i);
-}
-}
-else
-{
-_putchar(format[i]);
-count++;
-}
-}
-va_end(arg);
-return ((int) count);
+return (cont);
 }
 /**
- * _printf_ext_1 - prints
- * @val: the variable list
- * @ch: character of the format idx
- * @p_i: pointer to i
- * Return: an integer
- */
-int _printf_ext_1(va_list val, char ch, unsigned int *p_i)
+ *loop_format - loop format
+*@arg: va_list arg
+*@string: pointer from format
+*Description: This function make loop tp string pointer
+*Return: num of characteres printed
+*/
+int loop_format(va_list arg, const char *string)
 {
-unsigned int *p_i_count = p_i;
-int count = 0, tempNum;
-char *strTemp;
-switch (ch)
+int i = 0, flag = 0, cont_fm = 0, cont = 0, check_per = 0;
+while (i < _strlen((char *)string) && *string != '\0')
 {
-case 'z':
-count += c_print('%');
-*p_i_count = *p_i_count + 1;
-break;
-case 's':
-strTemp = va_arg(val, char *);
-if (strTemp == NULL)
-count += s_print("(null)");
-else
-count += s_print(strTemp);
-*p_i_count = *p_i_count + 1;
-break;
-case 'r':
-strTemp = va_arg(val, char *);
-if (strTemp == NULL)
-count += s_print("(null)");
-else
-count += sr_print(strTemp);
-*p_i_count = *p_i_count + 1;
-break;
-case 'd':
-case 'i':
-tempNum = va_arg(val, int);
-id_print(tempNum);
-count += count_int(tempNum);
-*p_i_count = *p_i_count + 1;
-break;
-default:
-count += c_print('%');
-count += c_print(ch);
-*p_i_count = *p_i_count + 1;
+char aux = string[i];
+if (aux == '%')
+{
+i++, flag++;
+aux = string[i];
+if (aux == '\0' && _strlen((char *)string) == 1)
+return (-1);
+if (aux == '\0')
+return (cont);
+if (aux == '%')
+{
+flag++;
+} else
+{
+cont_fm = function_manager(aux, arg);
+if (cont_fm >= 0 && cont_fm != -1)
+{
+i++;
+aux = string[i];
+if (aux == '%')
+flag--;
+cont = cont + cont_fm;
+} else if (cont_fm == -1 && aux != '\n')
+{
+cont += _putchar('%');
 }
-return (count);
+}
+}
+check_per = check_percent(&flag, aux);
+cont += check_per;
+if (check_per == 0 && aux != '\0' && aux != '%')
+cont += _putchar(aux), i++;
+check_per = 0;
+}
+return (cont);
+}
+/**
+ * check_percent - call function manager
+ *@flag: value by reference
+*@aux: character
+*Description: This function print % pear
+*Return: 1 if % is printed
+*/
+int check_percent(int *flag, char aux)
+{
+int tmp_flag;
+int cont = 0;
+tmp_flag = *flag;
+if (tmp_flag == 2 && aux == '%')
+{
+_putchar('%');
+tmp_flag = 0;
+cont = 1;
+}
+return (cont);
+}
+/**
+ * call_function_manager - call function manager
+ *@aux: character parameter
+*@arg: va_list arg
+*Description: This function call function manager
+*Return: num of characteres printed
+*/
+int call_function_manager(char aux, va_list arg)
+{
+int cont = 0;
+cont = function_manager(aux, arg);
+return (cont);
 }
